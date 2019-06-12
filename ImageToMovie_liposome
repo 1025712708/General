@@ -1,0 +1,68 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 将图片序列变成视频文件
+% By Hypo Chan 2019/6/12
+%创建视频文件
+
+v = VideoWriter('liposome_gray.avi');%创建视频文件
+v.FrameRate = 34;%视频文件播放速率
+imNum = 340; %样品个数
+open(v);%打开视频文件，准备写入数据
+
+%横坐标时间
+sampleRate = 1509;%采样速率(fps)
+timeInterval = 1/sampleRate;%采样时间时间间隔
+time = linspace(0,(imNum-1)/sampleRate,imNum)';%用s作为单位
+time = time*1000;
+
+
+% 使用循环，读取并保存每一帧图片
+for k = 1:imNum   
+    % 绘制图片视频
+ subplot('position',[0.01,0.30,0.4,0.4]);%前两个数字为相对整个figure位置，后两个为长宽
+temp = squeeze(filtData_exaggerate(k,:,:));
+    imshow(temp,[-250 500]);
+ xlim1=get(gca,'xlim');%得到x坐标轴的范围
+    ylim1=get(gca,'ylim');%得到y坐标轴的范围
+%     colormap(mymap)
+    caxis([-250 500]);%设定colormap的颜色坐标范围
+       title('Plasmonic images');
+    set(gca,'Fontsize',10);
+    
+        %插入时间
+    Time1 = sprintf('%04.1f',k/sampleRate*1000);%将时间转换为字符串
+    Time2 = ' ms';%时间单位
+    Time = strcat(Time1,Time2);%将时间和单位连接
+    text(sum(xlim1)*98/100,sum(ylim1)/10,Time,'Fontsize',10,'Color','w',...
+    'FontWeight','bold','horizontalAlignment','right');%在选定坐标轴位置插入时间文本
+
+    %插入scale bar
+     x1 = [sum(xlim1)*75/100,sum(xlim1)*95/100];%得到直线方向的两个x数值
+     y1 = [sum(ylim1)*95/100,sum(ylim1)*95/100];%得到直线方向的两个y数值
+     hold on
+     plot(x1,y1,'Color','w','LineWidth',2);%绘制直线
+     hold off
+     text(sum(xlim1)*85/100,sum(ylim1)*85/100,'3 μm','Fontsize',10,'Color','w',...
+    'FontWeight','bold','horizontalAlignment','center');%插入scale bar数值
+
+%   % 绘制强度与时间的关系图
+    subplot('position',[0.52,0.30,0.45,0.4]);
+    plot(time(1:k,1),I(1:k,1),'LineWidth',1,'Color',[0.3,0.75,0.93])  
+    xlabel('Time (s)');% x轴名称
+    ylabel('Intensity (a.u.)'); % y轴名称
+    axis([0 226 -50 520]) %设定坐标范围
+    title('Signal profile');
+    set(gca,'Fontsize',10,'FontWeight','bold','LineWidth',1);
+    
+    
+    %绘制第三个坐标轴并插入所需文本
+    subplot('position',[0,0.78,1,0.1])
+    set(gca,'visible','off');%使坐标轴不可见
+    text('Units','normalized','position',[0.5,0.5],'string','Liposome',...
+    'fontsize',22,'HorizontalAlignment','center')
+   
+
+    frame = getframe(gcf);%采集每张当前图片
+    writeVideo(v,frame)%写入每张图片数据到视频文件
+end
+close(v)
+
