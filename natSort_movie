@@ -1,0 +1,35 @@
+%% 读取文件夹中的图片，并按照自然顺序排列，最后制作成视频
+% function：1.natsort.m
+% Hai-Bo Chen 创建于2019/6/12
+
+clear;clc
+[file,path] = uigetfile('*.png'); %默认当前文件夹打开文件选择对话框（只包含tif文件）,主要是获取图片所在文件夹的路径
+myfolder = dir(fullfile(path,'*.png')); 
+imNum = size(myfolder,1); %图片张数
+[row,column] = size(imread(myfolder(1).name)); %第一张图片的长宽
+
+for ii = 1:imNum
+    fileName{ii} = myfolder(ii).name;
+end
+fileName = natsort(fileName);   %按名称的自然顺序重新排序字符串的cell数组
+data = cell(imNum,1);  %预设图片序列胞元数组
+for ii = 1:imNum
+temp = imread(fileName{ii});   %读取第ii张图片的数据
+data{ii} = temp;
+end
+
+%创建视频文件
+v = VideoWriter('gif2.avi');%创建视频文件
+v.FrameRate = 36;%视频文件播放速率
+open(v);%打开视频文件，准备写入数据
+
+for k = 1:imNum   
+    temp = data{k};
+    imshow(temp);
+    title('Rotation');
+    frame = getframe(gcf);%采集每张当前图片
+    writeVideo(v,frame)%写入每张图片数据到视频文件
+end
+close(v)
+
+
